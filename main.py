@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
+import xlsxwriter
 
 # Configuración de la página
 st.set_page_config(page_title="Conversor TXT a Excel", layout="wide")
