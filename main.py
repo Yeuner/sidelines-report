@@ -5,7 +5,7 @@ import pandas as pd
 from datetime import datetime
 import io
 import base64
-import openpyxl
+
 
 def generate_excel(df):
     # Crear un buffer en memoria para el archivo Excel
