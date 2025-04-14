@@ -1,4 +1,11 @@
 import streamlit as st
+
+try:
+    import openpyxl
+    st.success("✅ openpyxl está instalado correctamente")
+except ModuleNotFoundError as e:
+    st.error(f"❌ Error: {e}")
+    
 import pandas as pd
 from datetime import datetime
 import io
