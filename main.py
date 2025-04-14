@@ -2,40 +2,46 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
-import openpyxl
-
-# Configuración de la página
-st.set_page_config(page_title="Conversor TXT a Excel", layout="wide")
+import base64
 
 def generate_excel(df):
     # Crear un buffer en memoria para el archivo Excel
-    buffer = io.BytesIO()
+    output = io.BytesIO()
     
     # Generar nombre de archivo con fecha y hora actual
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     excel_filename = f"analisis_datos_{timestamp}.xlsx"
     
-    # Crear el archivo Excel usando XlsxWriter
-with pd.ExcelWriter(buffer, engine='openpyxl') as writer:       # Escribir los datos en una hoja
+    # Crear el archivo Excel en memoria
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        # Escribir los datos en una hoja
         df.to_excel(writer, sheet_name='Datos', index=False)
         
-        # Obtener el objeto workbook y worksheet
+        # Crear una hoja para el resumen
         workbook = writer.book
-        worksheet = workbook.add_worksheet('Resumen')
+        summary_sheet = workbook.create_sheet('Resumen')
         
         # Añadir información del resumen
-        worksheet.write('A1', 'Resumen del Análisis')
-        worksheet.write('A3', 'Número total de filas:')
-        worksheet.write('B3', len(df))
-        worksheet.write('A4', 'Número total de columnas:')
-        worksheet.write('B4', len(df.columns))
+        summary_sheet['A1'] = 'Resumen del Análisis'
+        summary_sheet['A3'] = 'Número total de filas:'
+        summary_sheet['B3'] = len(df)
+        summary_sheet['A4'] = 'Número total de columnas:'
+        summary_sheet['B4'] = len(df.columns)
         
         # Añadir lista de columnas
-        worksheet.write('A6', 'Lista de Columnas:')
-        for idx, col in enumerate(df.columns):
-            worksheet.write(idx + 6, 0, col)  # Corregido aquí
+        summary_sheet['A6'] = 'Lista de Columnas:'
+        for idx, col in enumerate(df.columns, start=7):
+            summary_sheet[f'A{idx}'] = col
     
-    return buffer, excel_filename
+    return output, excel_filename
+
+def get_download_link(buffer, filename):
+    """Genera un link de descarga para el archivo Excel"""
+    b64 = base64.b64encode(buffer.getvalue()).decode()
+    return f'<a href="data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,{b64}" download="{filename}">Descargar archivo Excel</a>'
+
+# Configuración de la página
+st.set_page_config(page_title="Conversor TXT a Excel", layout="wide")
 
 # Título de la aplicación
 st.title("Conversor de archivo TXT a Excel")
@@ -78,8 +84,9 @@ if uploaded_file is not None:
             excel_buffer, excel_filename = generate_excel(df)
             
             # Mostrar botón de descarga
+            st.markdown("### Descargar archivo Excel")
             st.download_button(
-                label="📥 Descargar Excel",
+                label="Descargar Excel",
                 data=excel_buffer.getvalue(),
                 file_name=excel_filename,
                 mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
