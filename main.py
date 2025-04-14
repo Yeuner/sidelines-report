@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from datetime import datetime
 import io
-import xlsxwriter
+import openpyxl
 
 # Configuración de la página
 st.set_page_config(page_title="Conversor TXT a Excel", layout="wide")
@@ -16,8 +16,7 @@ def generate_excel(df):
     excel_filename = f"analisis_datos_{timestamp}.xlsx"
     
     # Crear el archivo Excel usando XlsxWriter
-    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
-        # Escribir los datos en una hoja
+with pd.ExcelWriter(buffer, engine='openpyxl') as writer        # Escribir los datos en una hoja
         df.to_excel(writer, sheet_name='Datos', index=False)
         
         # Obtener el objeto workbook y worksheet
